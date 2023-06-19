@@ -1,0 +1,3 @@
+sync-data.json
+*.env
+rclone.conf
