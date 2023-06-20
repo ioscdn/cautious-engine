@@ -28,7 +28,7 @@ def get_last_checked_on():
 
 
 def rclone(args):
-    print(f"Running rclone {' '.join(args)}")
+    # print(f"Running rclone {' '.join(args)}")
     process = subprocess.run(["rclone", *args], capture_output=True, text=True)
     if process.returncode != 0:
         print(process.stdout)
