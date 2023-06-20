@@ -6,7 +6,7 @@ on:
             - main
     workflow_dispatch:
     schedule:
-        - cron: "06,16,26,36,46,56 * * * *"
+        - cron: "*/10 * * * *"
 
 concurrency:
     group: sync
