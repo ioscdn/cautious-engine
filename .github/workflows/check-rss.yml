@@ -20,7 +20,7 @@ env:
     LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON }}
 
 jobs:
-    sync:
+    check-rss-for-new-content:
         runs-on: ubuntu-22.04
         steps:
             - name: Checkout Repo
