@@ -17,6 +17,7 @@ env:
     RCLOUD_DEST: ${{ secrets.RCLOUD_DEST }}
     RSS_URL: ${{ secrets.RSS_URL }}
     HTTP_URL: ${{ secrets.HTTP_URL }}
+    LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON }}
 
 jobs:
     sync:

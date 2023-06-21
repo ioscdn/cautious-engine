@@ -37,6 +37,8 @@ if "--reset-db" in sys.argv:
 def get_last_checked_on():
     if db.exists("last_checked_on"):
         return datetime.fromisoformat(db.get("last_checked_on"))
+    elif os.getenv("LAST_CHECKED_ON"):
+        return datetime.fromisoformat(os.getenv("LAST_CHECKED_ON"))
     else:
         return datetime.fromtimestamp(0)
 
@@ -74,13 +76,14 @@ def check_for_new_items():
         feed.entries,
     )
     feed.entries = sorted(feed.entries, key=lambda x: x.published_parsed)
-    if len(feed.entries) == 0:
+    total_entries = len(feed.entries)
+    if total_entries == 0:
         log.info("No new items found")
     else:
-        log.info(f"Found {len(feed.entries)} new items")
-        for entry in feed.entries:
+        log.info(f"Found {total_entries} new items")
+        for i, entry in enumerate(feed.entries):
             if not "--dry-run" in sys.argv:
-                log.info(f"Copying: {entry.title}")
+                log.info(f"[{i+1}/{total_entries}] Copying: {entry.title}")
                 start_time = time()
                 rclone_copy = copy(entry.title)
                 time_taken = int(time() - start_time)
@@ -98,7 +101,7 @@ def check_for_new_items():
                     log.error("Copy failed, exiting...")
                     sys.exit(1)
             else:
-                log.info(f"Dry run, not copying: {entry.title}")
+                log.info(f"[{i+1}/{total_entries}] Skip Copying: {entry.title}")
                 db.set(
                     "last_checked_on",
                     datetime.fromtimestamp(mktime(entry.published_parsed)).isoformat(),
