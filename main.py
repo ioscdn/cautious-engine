@@ -10,7 +10,7 @@ import pickledb
 from dotenv import load_dotenv
 
 load_dotenv()
-DEBUG = "--debug" in sys.argv or os.getenv("DEBUG").lower() == "true"
+DEBUG = "--debug" in sys.argv or os.getenv("DEBUG", "False").lower() == "true"
 logging.basicConfig(
     level=logging.DEBUG if DEBUG else logging.INFO,
     format="[%(levelname)s] %(message)s",
@@ -23,13 +23,13 @@ try:
     RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")  # Optional
     RCLONE_DEST = os.getenv("RCLONE_DEST")  # Optional
     if not RCLONE_DEST:
-        log.debug("RCLONE_DEST not specified, using default 'dest:'")
         RCLONE_DEST = "dest:"
+        log.debug(f"RCLONE_DEST not specified, using default '{RCLONE_DEST}'")
 except KeyError as e:
     log.error(f"Missing environment variable: {e}")
     sys.exit(1)
 
-db = pickledb.load("sync-data.json", True)
+db = pickledb.load("rss-data.json", True)
 if "--reset-db" in sys.argv:
     db.deldb()
 
@@ -80,13 +80,13 @@ def check_for_new_items():
         log.info(f"Found {len(feed.entries)} new items")
         for entry in feed.entries:
             if not "--dry-run" in sys.argv:
-                log.info("Syncing:", entry.title)
+                log.info(f"Copying: {entry.title}")
                 start_time = time()
                 rclone_copy = copy(entry.title)
                 time_taken = int(time() - start_time)
                 if rclone_copy == 0:
                     log.info(
-                        f"Synced successfully in {time_taken} seconds: {entry.title}"
+                        f"Copied successfully in {time_taken} seconds: {entry.title}"
                     )
                     db.set(
                         "last_checked_on",
@@ -95,15 +95,15 @@ def check_for_new_items():
                         ).isoformat(),
                     )
                 else:
-                    log.error("Sync failed, exiting...")
+                    log.error("Copy failed, exiting...")
                     sys.exit(1)
             else:
-                log.info("Dry run, not syncing:", entry.title)
+                log.info(f"Dry run, not copying: {entry.title}")
                 db.set(
                     "last_checked_on",
                     datetime.fromtimestamp(mktime(entry.published_parsed)).isoformat(),
                 )
-        log.info(f"Synced {len(feed.entries)} new items successfully")
+        log.info(f"Copied {len(feed.entries)} new items successfully")
 
 
 if __name__ == "__main__":
