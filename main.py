@@ -1,9 +1,8 @@
+import logging
 import os
-import random
 import subprocess
 import sys
 from datetime import datetime
-from pathlib import Path
 from time import mktime, time
 
 import feedparser
@@ -11,14 +10,29 @@ import pickledb
 from dotenv import load_dotenv
 
 load_dotenv()
+DEBUG = "--debug" in sys.argv or os.getenv("DEBUG").lower() == "true"
+logging.basicConfig(
+    level=logging.DEBUG if DEBUG else logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
+log = logging.getLogger(__name__)
 
-HTTP_URL = os.getenv("HTTP_URL")
-RSS_URL = os.getenv("RSS_URL")
-RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")
+try:
+    HTTP_URL = os.environ["HTTP_URL"]  # Required
+    RSS_URL = os.environ["RSS_URL"]  # Required
+    RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")  # Optional
+    RCLONE_DEST = os.getenv("RCLONE_DEST")  # Optional
+    if not RCLONE_DEST:
+        log.debug("RCLONE_DEST not specified, using default 'dest:'")
+        RCLONE_DEST = "dest:"
+except KeyError as e:
+    log.error(f"Missing environment variable: {e}")
+    sys.exit(1)
 
 db = pickledb.load("sync-data.json", True)
 if "--reset-db" in sys.argv:
     db.deldb()
+
 
 def get_last_checked_on():
     if db.exists("last_checked_on"):
@@ -28,11 +42,11 @@ def get_last_checked_on():
 
 
 def rclone(args):
-    # print(f"Running rclone {' '.join(args)}")
+    log.debug(f"Running rclone {' '.join(args)}")
     process = subprocess.run(["rclone", *args], capture_output=True, text=True)
     if process.returncode != 0:
-        print(process.stdout)
-        print(process.stderr)
+        log.warning(process.stdout)
+        log.warning(process.stderr)
     return process.returncode
 
 
@@ -40,7 +54,7 @@ def copy(name):
     args = [
         "copyurl",
         HTTP_URL.format(name=name),
-        f"dest:",
+        RCLONE_DEST,
         "--ignore-existing",
         "--auto-filename",
     ]
@@ -61,17 +75,19 @@ def check_for_new_items():
     )
     feed.entries = sorted(feed.entries, key=lambda x: x.published_parsed)
     if len(feed.entries) == 0:
-        print("No new items found")
+        log.info("No new items found")
     else:
-        print(f"Found {len(feed.entries)} new items")
+        log.info(f"Found {len(feed.entries)} new items")
         for entry in feed.entries:
             if not "--dry-run" in sys.argv:
-                print("Syncing:", entry.title)
+                log.info("Syncing:", entry.title)
                 start_time = time()
                 rclone_copy = copy(entry.title)
                 time_taken = int(time() - start_time)
                 if rclone_copy == 0:
-                    print(f"Synced successfully in {time_taken} seconds: {entry.title}")
+                    log.info(
+                        f"Synced successfully in {time_taken} seconds: {entry.title}"
+                    )
                     db.set(
                         "last_checked_on",
                         datetime.fromtimestamp(
@@ -79,15 +95,15 @@ def check_for_new_items():
                         ).isoformat(),
                     )
                 else:
-                    print("Sync failed, exiting...")
+                    log.error("Sync failed, exiting...")
                     sys.exit(1)
             else:
-                print("Dry run, not syncing:", entry.title)
+                log.info("Dry run, not syncing:", entry.title)
                 db.set(
                     "last_checked_on",
                     datetime.fromtimestamp(mktime(entry.published_parsed)).isoformat(),
                 )
-        print(f"Synced {len(feed.entries)} new items successfully")
+        log.info(f"Synced {len(feed.entries)} new items successfully")
 
 
 if __name__ == "__main__":

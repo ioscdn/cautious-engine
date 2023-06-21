@@ -1,4 +1,4 @@
-name: Sync Schedule
+name: Check RSS for new content
 
 on:
     push:
@@ -9,11 +9,12 @@ on:
         - cron: "*/10 * * * *"
 
 concurrency:
-    group: sync
+    group: check-rss
 
 env:
     RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
     RCLONE_CONFIG_PATH: rclone.conf
+    RCLOUD_DEST: ${{ secrets.RCLOUD_DEST }}
     RSS_URL: ${{ secrets.RSS_URL }}
     HTTP_URL: ${{ secrets.HTTP_URL }}
 
@@ -44,7 +45,7 @@ jobs:
                   workflow_conclusion: success
                   if_no_artifact_found: warn
 
-            - name: Run sync
+            - name: Run check script
               continue-on-error: true
               timeout-minutes: 330
               run: |
