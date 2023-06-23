@@ -12,12 +12,12 @@ concurrency:
     group: check-rss
 
 env:
-    RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
+    RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG || vars.RCLONE_CONFIG }}
     RCLONE_CONFIG_PATH: rclone.conf
-    RCLOUD_DEST: ${{ secrets.RCLOUD_DEST }}
-    RSS_URL: ${{ secrets.RSS_URL }}
-    HTTP_URL: ${{ secrets.HTTP_URL }}
-    LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON }}
+    RCLONE_DEST: ${{ secrets.RCLONE_DEST || vars.RCLONE_DEST }}
+    RSS_URL: ${{ secrets.RSS_URL || vars.RSS_URL }}
+    HTTP_URL: ${{ secrets.HTTP_URL || vars.HTTP_URL }}
+    LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON || vars.LAST_CHECKED_ON }}
 
 jobs:
     check-rss-for-new-content:
