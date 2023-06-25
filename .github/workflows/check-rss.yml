@@ -47,12 +47,12 @@ jobs:
                   if_no_artifact_found: warn
 
             - name: Run check script
-              continue-on-error: true
               timeout-minutes: 330
               run: |
                   python3 main.py
 
             - name: Upload artifacts
+              if: '!cancelled()'
               uses: actions/upload-artifact@v3
               with:
                   name: rss-data
