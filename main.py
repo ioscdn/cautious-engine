@@ -22,10 +22,14 @@ try:
     RSS_URL = os.environ["RSS_URL"]  # Required
     RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")  # Optional
     RCLONE_DEST = os.getenv("RCLONE_DEST")  # Optional
-    RETRY_FOR_MINUTES = int(os.getenv("RETRY_FOR_MINUTES", 24 * 60))  # Optional
     if not RCLONE_DEST:
         RCLONE_DEST = "dest:"
         log.debug(f"RCLONE_DEST not specified, using default '{RCLONE_DEST}'")
+    RETRY_FOR_MINUTES = os.getenv("RETRY_FOR_MINUTES")  # Optional
+    if not RETRY_FOR_MINUTES or not RETRY_FOR_MINUTES.isdigit():
+        RETRY_FOR_MINUTES = 24 * 60
+        log.debug(f"RETRY_FOR_MINUTES not specified, using default '{RETRY_FOR_MINUTES}'")
+    RETRY_FOR_MINUTES = int(RETRY_FOR_MINUTES)
 except KeyError as e:
     log.error(f"Missing environment variable: {e}")
     sys.exit(1)
