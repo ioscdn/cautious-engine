@@ -26,17 +26,23 @@ jobs:
             - name: Checkout Repo
               uses: actions/checkout@v3
 
-            - name: Setup python-3.10
+            - name: Setup Python
               uses: actions/setup-python@v4
+              with:
+                  cache: "pip"
+            - run: pip install -r requirements.txt
 
             - name: Setup rclone
-              run: |
+              id: cache-primes
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      /usr/bin/rclone
+                      /usr/local/share/man/man1/rclone.1
+                  key: ${{ runner.os }}-rclone
+            - run: |
                   sudo -v ; curl https://rclone.org/install.sh | sudo bash
                   echo "$RCLONE_CONFIG" > $RCLONE_CONFIG_PATH
-
-            - name: Install requirements
-              run: |
-                  python3 -m pip install -r requirements.txt
 
             - name: Download artifact
               uses: dawidd6/action-download-artifact@v2
@@ -52,7 +58,7 @@ jobs:
                   python3 main.py
 
             - name: Upload artifacts
-              if: '!cancelled()'
+              if: "!cancelled()"
               uses: actions/upload-artifact@v3
               with:
                   name: rss-data
