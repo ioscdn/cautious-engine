@@ -35,4 +35,4 @@ db = pickledb.load("rss-data.json", True)
 if "--reset-db" in sys.argv:
     db.deldb()
 
-rclone = Rclone(rclone_path=RCLONE_CONFIG_PATH, default_dest=RCLONE_DEST, debug=DEBUG)
+rclone = Rclone(config_path=RCLONE_CONFIG_PATH, default_dest=RCLONE_DEST, debug=DEBUG)
