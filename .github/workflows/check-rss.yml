@@ -19,6 +19,7 @@ env:
     HTTP_URL: ${{ secrets.HTTP_URL }}
     LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON || vars.LAST_CHECKED_ON }}
     RETRY_FOR_MINUTES: ${{ secrets.RETRY_FOR_MINUTES || vars.RETRY_FOR_MINUTES }}
+    DEBUG: ${{ secrets.DEBUG || vars.DEBUG }}
 
 jobs:
     check-rss-for-new-content:

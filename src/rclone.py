@@ -4,16 +4,18 @@ import subprocess
 
 class Rclone:
     def __init__(
-        self, config_path=None, default_dest="dest:", rclone_path="rclone", debug=False
+        self, config_path=None, default_dest=None, rclone_path="rclone", debug=False
     ) -> None:
         self.args = [rclone_path]
         if config_path:
             self.args.extend(["--config", config_path])
-        self.default_dest = default_dest
+        self.default_dest = default_dest or "dest:"
         self.log = logging.getLogger(__name__)
         self.debug = debug
         if debug:
             self.log.setLevel(logging.DEBUG)
+        self.log.debug(f"Rclone args: {self.args}")
+        self.log.debug(f"Rclone default dest: {self.default_dest}")
 
     def rclone(self, args):
         self.log.debug(f"Running rclone {' '.join(args)}")

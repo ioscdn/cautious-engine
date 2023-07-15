@@ -21,12 +21,6 @@ try:
     RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")  # Optional
     RCLONE_DEST = os.getenv("RCLONE_DEST")  # Optional
     RETRY_FOR_MINUTES = os.getenv("RETRY_FOR_MINUTES")  # Optional
-    if not RETRY_FOR_MINUTES or not RETRY_FOR_MINUTES.isdigit():
-        RETRY_FOR_MINUTES = 24 * 60
-        log.debug(
-            f"RETRY_FOR_MINUTES not specified, using default '{RETRY_FOR_MINUTES}'"
-        )
-    RETRY_FOR_MINUTES = int(RETRY_FOR_MINUTES)
 except KeyError as e:
     log.error(f"Missing environment variable: {e}")
     sys.exit(1)
