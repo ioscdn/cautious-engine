@@ -17,6 +17,6 @@ rss = RSSSync(
 )
 
 if __name__ == "__main__":
-    rss.check_failed_entries()
     rss.check_new_entries()
+    rss.check_failed_entries()
     db.dump()
