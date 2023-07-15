@@ -119,7 +119,7 @@ class RSSSync:
             for i, entry in enumerate(feed.entries):
                 if not "--dry-run" in sys.argv:
                     self.log.info(f"[{i+1}/{total_entries}] Copying: {entry.title}")
-                    url = self.get_dl_link(entry)
+                    url = self.get_dl_link(entry.title)
                     start_time = time()
                     rclone_copy = self.clone(url)
                     time_taken = int(time() - start_time)
