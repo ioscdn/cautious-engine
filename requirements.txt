@@ -1,3 +1,4 @@
 pickledb==0.9.2
 feedparser==6.0.10
 python-dotenv==1.0.0
+seedrcc>=1.0.1

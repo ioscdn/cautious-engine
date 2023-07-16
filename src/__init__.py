@@ -21,6 +21,9 @@ try:
     RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")  # Optional
     RCLONE_DEST = os.getenv("RCLONE_DEST")  # Optional
     RETRY_FOR_MINUTES = os.getenv("RETRY_FOR_MINUTES")  # Optional
+    SEEDRCC_EMAIL = os.getenv("SEEDRCC_EMAIL")  # Optional
+    SEEDRCC_PASSWORD = os.getenv("SEEDRCC_PASSWORD")  # Optional
+    TORRENT_URL = os.getenv("TORRENT_URL")  # Optional
 except KeyError as e:
     log.error(f"Missing environment variable: {e}")
     sys.exit(1)

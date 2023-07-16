@@ -20,6 +20,9 @@ env:
     LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON || vars.LAST_CHECKED_ON }}
     RETRY_FOR_MINUTES: ${{ secrets.RETRY_FOR_MINUTES || vars.RETRY_FOR_MINUTES }}
     DEBUG: ${{ secrets.DEBUG || vars.DEBUG }}
+    SEEDRCC_EMAIL: ${{ secrets.SEEDRCC_EMAIL }}
+    SEEDRCC_PASSWORD: ${{ secrets.SEEDRCC_PASSWORD }}
+    TORRENT_URL: ${{ secrets.TORRENT_URL }}
 
 jobs:
     check-rss-for-new-content:
