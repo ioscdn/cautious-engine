@@ -115,7 +115,7 @@ class RSSSync:
                 tor.delete()
             except TimeoutError as e:
                 tor.delete()
-                raise Exception(f"Seedrcc timed out: {e}")
+                raise TimeoutError(f"Seedrcc timed out: {e}")
             except Exception as e:
                 if "tor" in locals():
                     tor.delete()

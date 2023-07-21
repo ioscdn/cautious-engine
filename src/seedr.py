@@ -93,8 +93,6 @@ class Seedrcc(Seedr):
     def wait_for_torrents(self, torrent: Torrent, timeout: int) -> Torrent:
         now = time()
         while torrent.status != "finished" and torrent.status != "deleted":
-            print(time() - now)
-            print(timeout)
             if time() - now > timeout:
                 raise TimeoutError("Timeout while waiting for torrent to finish")
         return torrent
