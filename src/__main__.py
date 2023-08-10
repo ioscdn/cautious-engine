@@ -1,8 +1,12 @@
+import logging
+
 from src import (DEBUG, HTTP_URL, RETRY_FOR_MINUTES, RSS_URL, SEEDRCC_EMAIL,
-                 SEEDRCC_PASSWORD, TORRENT_URL, db, log, rclone)
+                 SEEDRCC_PASSWORD, TORRENT_URL, db, rclone)
 
 from .rss import RSSSync
 from .seedr import Seedrcc
+
+log = logging.getLogger(__name__)
 
 
 def link_process(entry, using_seedr):
@@ -13,8 +17,12 @@ def link_process(entry, using_seedr):
 
 
 if SEEDRCC_EMAIL and SEEDRCC_PASSWORD:
-    seedr = Seedrcc(SEEDRCC_EMAIL, SEEDRCC_PASSWORD)
-    seedr.delete_all()
+    try:
+        seedr = Seedrcc(SEEDRCC_EMAIL, SEEDRCC_PASSWORD)
+        seedr.delete_all()
+    except Exception as err:
+        log.error(f"Seedrcc login failed: {err}")
+        seedr = None
 else:
     seedr = None
 
