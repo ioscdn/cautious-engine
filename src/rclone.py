@@ -25,12 +25,27 @@ class Rclone:
             self.log.warning(process.stderr.strip())
         return process.returncode
 
-    def copyurl(self, url, dest=None, ignore_existing=True, auto_filename=True):
-        args = [
-            "copyurl",
-            url,
-            dest or self.default_dest,
-        ]
+    def copyurl(
+        self,
+        url,
+        dest=None,
+        ignore_existing=True,
+        auto_filename=True,
+        retries=1,
+        low_level_retries=5,
+    ):
+        args = []
+        if retries:
+            args.extend(["--retries", str(retries)])
+        if low_level_retries:
+            args.extend(["--low-level-retries", str(low_level_retries)])
+        args.extend(
+            [
+                "copyurl",
+                url,
+                dest or self.default_dest,
+            ]
+        )
         if ignore_existing:
             args.append("--ignore-existing")
         if auto_filename:

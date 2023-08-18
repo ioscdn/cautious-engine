@@ -19,7 +19,7 @@ class RSSSync:
         db: PickleDB,
         rclone: Rclone,
         link_process: callable = None,
-        retry_minutes=24 * 60,
+        retry_minutes=24 * 60 * 3,
         debug=False,
         seedr: Seedrcc = None,
     ) -> None:
@@ -31,16 +31,19 @@ class RSSSync:
         self.link_process = link_process
         if debug:
             self.log.setLevel(logging.DEBUG)
-        try:
+        if retry_minutes and (type(retry_minutes) == int or retry_minutes.isdigit()):
             if int(retry_minutes) > 0:
                 self.retry_minutes = int(retry_minutes)
             else:
-                raise ValueError("Retry minutes must be greater than 0")
-        except (ValueError, TypeError) as e:
+                self.retry_minutes = 24 * 60 * 3
+                self.log.debug(
+                    f"retry_minutes is not a positive integer, defaulting to {self.retry_minutes}"
+                )
+        else:
+            self.retry_minutes = 24 * 60 * 3
             self.log.debug(
-                "Invalid value for retry_minutes, using default value of 24 hours"
+                f"retry_minutes is not a positive integer, defaulting to {self.retry_minutes}"
             )
-            self.retry_minutes = 24 * 60
 
     @property
     def last_checked_on(self):
