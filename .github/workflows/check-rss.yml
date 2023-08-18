@@ -47,10 +47,11 @@ jobs:
               uses: dawidd6/action-download-artifact@v2
               with:
                   name: rss-data
+                  workflow_conclusion: completed
                   if_no_artifact_found: warn
 
             - name: Run check script
-              timeout-minutes: 330
+              timeout-minutes: 60
               run: |
                   python3 -m src
 
