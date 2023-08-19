@@ -37,7 +37,8 @@ class ThreadSafePickleDB(PickleDB):
             return super().dgetall(*args, **kwargs)
 
     def dvals(self, name):
-        return super().dvals(name)
+        with self._lock:
+            return super().dvals(name)
 
     def lcreate(self, *args, **kwargs):
         with self._lock:

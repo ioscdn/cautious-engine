@@ -9,7 +9,7 @@ config = Config(
         "DB_PATH": "rss-data.json",
         "DEBUG": "False",
         "ENTRY_ID_TAG": "title",
-        "ENTRY_EXPIRE_DAYS": "1",
+        "ENTRY_EXPIRE_HOURS": "72",
         "ENTRY_COMPARE_METHOD": "last_published_date",
         "WORKERS": "5",
     }

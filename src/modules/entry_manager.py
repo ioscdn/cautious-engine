@@ -68,9 +68,9 @@ class EntriesManager:
         self.database.lremvalue("previous_entries", entry_id)
 
     def get_entries(self, name: str = "entries"):
-        for entry in self.database.dvals(name):
+        for entry in list(self.database.dvals(name)):
             entry = Entry(entry)
-            if entry.expired:
+            if entry.is_expired:
                 self.__remove_entry(entry.id)
             else:
                 yield entry

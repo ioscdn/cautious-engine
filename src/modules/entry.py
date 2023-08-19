@@ -7,12 +7,7 @@ from src import config
 class Entry:
     def __init__(self, entry: dict):
         self.__entry = entry
-        self.__entry["expires_on"] = entry.get(
-            "expires_on",
-            (
-                datetime.now() + timedelta(days=config.required.ENTRY_EXPIRE_DAYS)
-            ).isoformat(),
-        )
+        self.__entry["created_at"] = entry.get("created_at", datetime.now().isoformat())
         self.__entry_id_tag = config.required.ENTRY_ID_TAG
 
     @property
@@ -24,8 +19,10 @@ class Entry:
         return self.__entry
 
     @property
-    def expired(self):
-        return datetime.now() > datetime.fromisoformat(self.__entry["expires_on"])
+    def is_expired(self):
+        return datetime.now() - datetime.fromisoformat(self.created_at) > timedelta(
+            hours=config.required.ENTRY_EXPIRE_HOURS
+        )
 
     def __getitem__(self, key):
         return self.__entry[key]
