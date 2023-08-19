@@ -80,9 +80,10 @@ class EntriesManager:
 
     def set_failed(self, entry_id: str):
         entry = self.database.dget("entries", entry_id)
-        self.__remove_entry(entry_id)
-        entry["is_failed"] = True
-        self.__save_entries([Entry(entry)])
+        if not entry.get("is_failed", False):
+            self.__remove_entry(entry_id)
+            entry["is_failed"] = True
+            self.__save_entries([Entry(entry)])
 
     def save_new_entries(self, entries: List[dict | Entry]):
         entries = self.__dicts_to_entries(entries)

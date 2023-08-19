@@ -23,6 +23,7 @@ class WorkerManager:
         self.queue = Queue()
         self.total = 0
         self.__completed = 0
+        self.__failed = 0
         self._lock = Lock()
 
     def update_entries(self):
@@ -33,6 +34,11 @@ class WorkerManager:
         with self._lock:
             self.__completed += 1
             return self.__completed
+    
+    def __increase_failed(self):
+        with self._lock:
+            self.__failed += 1
+            return self.__failed
 
     def runners(self):
         while True:
@@ -44,7 +50,8 @@ class WorkerManager:
                     self.em.set_success(entry.id)
                 else:
                     self.em.set_failed(entry.id)
-                log.debug(f"Tasks Completed: {tag}")
+                    self.__increase_failed()
+                log.debug(f"{tag} Task completed")
             except Exception:
                 log.error(format_exc())
             self.queue.task_done()
@@ -68,5 +75,5 @@ class WorkerManager:
         self.start_threads(config.required.WORKERS)
 
         self.queue.join()
-        log.debug(f"[{self.__completed}/{self.total}] Tasks completed successfully")
+        log.debug(f"[{self.__completed - self.__failed}/{self.total}] Tasks completed successfully")
         db.dump()
