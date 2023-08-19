@@ -26,7 +26,7 @@ jobs:
 
             - name: Install dependencies and rclone
               run: |
-                  pip install -r requirements.txt
+                  pip install -r requirements.txt -q
                   sudo -v ; curl https://rclone.org/install.sh | sudo bash
 
             - name: Setup environment variables and rclone config

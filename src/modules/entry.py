@@ -31,7 +31,10 @@ class Entry:
         return self.__entry[key]
 
     def __getattr__(self, key):
-        return self.__entry[key]
+        try:
+            return self.__entry[key]
+        except KeyError:
+            return None
 
     def __contains__(self, key):
         return key in self.__entry
