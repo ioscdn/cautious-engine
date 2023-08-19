@@ -12,6 +12,8 @@ concurrency:
     group: check-rss
 
 env:
+    RCLONE_CONFIG_PATH: rclone.conf
+    RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
     DEBUG: ${{ secrets.DEBUG || vars.DEBUG }}
 
 jobs:
@@ -31,8 +33,7 @@ jobs:
 
             - name: Setup environment variables and rclone config
               run: |
-                  mkdir -p ~/.config/rclone
-                  echo "${{ secrets.RCLONE_CONFIG || vars.RCLONE_CONFIG }}" > ~/.config/rclone/rclone.conf
+                  echo "$RCLONE_CONFIG" > $RCLONE_CONFIG_PATH
                   echo "${{ secrets.ENV || vars.env }}" > $GITHUB_WORKSPACE/.env
 
             - name: Download artifact
@@ -40,6 +41,7 @@ jobs:
               with:
                   name: rss-data
                   workflow_conclusion: ""
+                  check_artifacts: true
                   if_no_artifact_found: warn
 
             - name: Run check script
