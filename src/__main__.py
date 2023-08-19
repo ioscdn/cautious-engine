@@ -1,8 +1,10 @@
 import logging
+from time import time
 
 import feedparser
+
 from src import DEBUG, config, rclone
-from time import time
+
 from .modules.entry import Entry
 from .rclone import Rclone
 from .seedr import Seedrcc
@@ -69,7 +71,9 @@ def handle_entry(entry: Entry, total: int, current: int):
         except Exception as e:
             log.debug(f"Seedrcc failed: {e}")
     if result:
-        log.info(f"{count} Copied Successfully in {int(time() - start_time)}s: {entry.title}")
+        log.info(
+            f"{count} Copied Successfully in {int(time() - start_time)}s: {entry.title}"
+        )
     return result
 
 

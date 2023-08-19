@@ -1,13 +1,15 @@
 import logging
 from queue import Queue
-from threading import Thread, Lock
-
-from src import config, db, DEBUG
+from threading import Lock, Thread
 from traceback import format_exc
+
+from src import DEBUG, config, db
+
 from .modules.entry_manager import EntriesManager
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG if DEBUG else logging.INFO)
+
 
 class WorkerManager:
     def __init__(
@@ -26,7 +28,7 @@ class WorkerManager:
     def update_entries(self):
         entries = self.get_entries()
         self.em.save_new_entries(entries)
-    
+
     def __get_current(self):
         with self._lock:
             self.completed += 1
@@ -36,7 +38,9 @@ class WorkerManager:
         while True:
             try:
                 entry = self.queue.get()
-                result = self.handle_entry(entry=entry, total=self.total, current=self.__get_current())
+                result = self.handle_entry(
+                    entry=entry, total=self.total, current=self.__get_current()
+                )
                 if result:
                     self.em.set_success(entry.id)
                 else:
@@ -65,7 +69,7 @@ class WorkerManager:
         log.debug("Starting threads")
         log.info(f"Total tasks: {self.total}")
         self.start_threads(config.required.WORKERS)
-        
+
         self.queue.join()
         log.debug(f"[{self.completed}/{self.total}] Tasks completed successfully")
         db.dump()
