@@ -17,7 +17,7 @@ env:
     DEBUG: ${{ secrets.DEBUG || vars.DEBUG }}
 
 jobs:
-    check-rss-for-new-content:
+    check-content:
         runs-on: ubuntu-22.04
         steps:
             - name: Checkout Repo
