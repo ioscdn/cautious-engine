@@ -1,4 +1,4 @@
-name: Check RSS for new content
+name: Check contents
 
 on:
     push:
@@ -9,7 +9,7 @@ on:
         - cron: "*/10 * * * *"
 
 concurrency:
-    group: check-rss
+    group: ${{ github.workflow }}
 
 env:
     RCLONE_CONFIG_PATH: rclone.conf
