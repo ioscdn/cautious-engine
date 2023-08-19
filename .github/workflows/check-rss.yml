@@ -12,17 +12,7 @@ concurrency:
     group: check-rss
 
 env:
-    RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
-    RCLONE_CONFIG_PATH: rclone.conf
-    RCLONE_DEST: ${{ secrets.RCLONE_DEST }}
-    RSS_URL: ${{ secrets.RSS_URL }}
-    HTTP_URL: ${{ secrets.HTTP_URL }}
-    LAST_CHECKED_ON: ${{ secrets.LAST_CHECKED_ON || vars.LAST_CHECKED_ON }}
-    RETRY_FOR_MINUTES: ${{ secrets.RETRY_FOR_MINUTES || vars.RETRY_FOR_MINUTES }}
     DEBUG: ${{ secrets.DEBUG || vars.DEBUG }}
-    SEEDRCC_EMAIL: ${{ secrets.SEEDRCC_EMAIL }}
-    SEEDRCC_PASSWORD: ${{ secrets.SEEDRCC_PASSWORD }}
-    TORRENT_URL: ${{ secrets.TORRENT_URL }}
 
 jobs:
     check-rss-for-new-content:
@@ -34,14 +24,16 @@ jobs:
             - name: Setup Python
               uses: actions/setup-python@v4
 
-            - name: Setup Rclone
-              run: |
-                  sudo -v ; curl https://rclone.org/install.sh | sudo bash
-                  echo "$RCLONE_CONFIG" > $RCLONE_CONFIG_PATH
-
-            - name: Install requirements
+            - name: Install dependencies and rclone
               run: |
                   pip install -r requirements.txt
+                  sudo -v ; curl https://rclone.org/install.sh | sudo bash
+
+            - name: Setup environment variables and rclone config
+              run: |
+                  mkdir -p ~/.config/rclone
+                  echo "${{ secrets.RCLONE_CONFIG || vars.RCLONE_CONFIG }}" > ~/.config/rclone/rclone.conf
+                  echo "${{ secrets.ENV || vars.env }}" > $GITHUB_WORKSPACE/.env
 
             - name: Download artifact
               uses: dawidd6/action-download-artifact@v2
@@ -51,7 +43,7 @@ jobs:
                   if_no_artifact_found: warn
 
             - name: Run check script
-              timeout-minutes: 60
+              timeout-minutes: 120
               run: |
                   python3 -m src
 

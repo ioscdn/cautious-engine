@@ -1,5 +1,6 @@
 import logging
 import os
+import threading
 from time import time
 
 from seedrcc import Login, Seedr
@@ -67,19 +68,23 @@ class Seedrcc(Seedr):
         login = Login(username, password)
         login.authorize()
         self.token = login.token
+        self._lock = threading.RLock()
         super().__init__(token=self.token)
 
-    def add_download(self, uri, filter_ext=None) -> Torrent:
-        tor = None
-        if uri.startswith("magnet"):
-            tor = self.addTorrent(magnetLink=uri)
-        else:
-            tor = self.addTorrent(torrentFile=uri)
-        if tor["code"] != 200:
-            raise Exception(tor["error"])
-        return self.get_torrent(
-            torrent_id=tor["user_torrent_id"], filter_ext=filter_ext
-        )
+    def download(self, uri, filter_ext=None, timeout=8 * 60) -> Torrent:
+        with self._lock:
+            tor = None
+            if uri.startswith("magnet"):
+                tor = self.addTorrent(magnetLink=uri)
+            else:
+                tor = self.addTorrent(torrentFile=uri)
+            if tor["code"] != 200:
+                raise Exception(tor["error"])
+            tor = self.get_torrent(
+                torrent_id=tor["user_torrent_id"], filter_ext=filter_ext
+            )
+            self.wait_for_torrents(tor, timeout)
+            return tor
 
     @property
     def contents(self):

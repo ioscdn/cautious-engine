@@ -1,35 +1,29 @@
 import logging
-import os
 import sys
 
-import pickledb
-from dotenv import load_dotenv
+from .modules.config import Config
+from .modules.database import ThreadSafePickleDB
 
-from .rclone import Rclone
+config = Config(
+    default_values={
+        "DB_PATH": "rss-data.json",
+        "DEBUG": "False",
+        "ENTRY_ID_TAG": "title",
+        "ENTRY_EXPIRE_DAYS": "1",
+        "ENTRY_COMPARE_METHOD": "last_published_date",
+        "WORKERS": "5",
+    }
+)
 
-load_dotenv()
-DEBUG = "--debug" in sys.argv or os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = "--debug" in sys.argv or config.DEBUG.lower() == "true"
+
 logging.basicConfig(
     level=logging.DEBUG if DEBUG else logging.INFO,
     format="[%(levelname)s] %(message)s",
 )
 log = logging.getLogger(__name__)
 
-try:
-    HTTP_URL = os.environ["HTTP_URL"]  # Required
-    RSS_URL = os.environ["RSS_URL"]  # Required
-    RCLONE_CONFIG_PATH = os.getenv("RCLONE_CONFIG_PATH")  # Optional
-    RCLONE_DEST = os.getenv("RCLONE_DEST")  # Optional
-    RETRY_FOR_MINUTES = os.getenv("RETRY_FOR_MINUTES")  # Optional
-    SEEDRCC_EMAIL = os.getenv("SEEDRCC_EMAIL")  # Optional
-    SEEDRCC_PASSWORD = os.getenv("SEEDRCC_PASSWORD")  # Optional
-    TORRENT_URL = os.getenv("TORRENT_URL")  # Optional
-except KeyError as e:
-    log.error(f"Missing environment variable: {e}")
-    sys.exit(1)
 
-db = pickledb.load("rss-data.json", True)
+db = ThreadSafePickleDB(config.required.DB_PATH, True)
 if "--reset-db" in sys.argv:
     db.deldb()
-
-rclone = Rclone(config_path=RCLONE_CONFIG_PATH, default_dest=RCLONE_DEST, debug=DEBUG)
