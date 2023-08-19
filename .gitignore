@@ -2,3 +2,4 @@ rss-data.json
 *.env
 rclone.conf
 __pycache__
+test.py

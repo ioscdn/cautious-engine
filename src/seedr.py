@@ -68,7 +68,7 @@ class Seedrcc(Seedr):
         login = Login(username, password)
         login.authorize()
         self.token = login.token
-        self._lock = threading.RLock()
+        self._lock = threading.Lock()
         super().__init__(token=self.token)
 
     def download(self, uri, filter_ext=None, timeout=8 * 60) -> Torrent:

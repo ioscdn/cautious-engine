@@ -22,7 +22,7 @@ class WorkerManager:
         self.get_entries = get_entries
         self.queue = Queue()
         self.total = 0
-        self.completed = 0
+        self.__completed = 0
         self._lock = Lock()
 
     def update_entries(self):
@@ -31,26 +31,23 @@ class WorkerManager:
 
     def __get_current(self):
         with self._lock:
-            self.completed += 1
-            return self.completed
+            self.__completed += 1
+            return self.__completed
 
     def runners(self):
         while True:
+            entry = self.queue.get()
+            tag = f"[{self.__get_current()}/{self.total}]"
             try:
-                entry = self.queue.get()
-                result = self.handle_entry(
-                    entry=entry, total=self.total, current=self.__get_current()
-                )
+                result = self.handle_entry(entry=entry, tag=tag)
                 if result:
                     self.em.set_success(entry.id)
                 else:
                     self.em.set_failed(entry.id)
-                self.completed += 1
-                log.debug(f"Tasks Completed: {self.completed}/{self.total}")
-                self.queue.task_done()
+                log.debug(f"Tasks Completed: {tag}")
             except Exception:
                 log.error(format_exc())
-                self.queue.task_done()
+            self.queue.task_done()
 
     def start_threads(self, workers: int):
         for _ in range(workers):
@@ -71,5 +68,5 @@ class WorkerManager:
         self.start_threads(config.required.WORKERS)
 
         self.queue.join()
-        log.debug(f"[{self.completed}/{self.total}] Tasks completed successfully")
+        log.debug(f"[{self.__completed}/{self.total}] Tasks completed successfully")
         db.dump()

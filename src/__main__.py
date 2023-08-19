@@ -1,5 +1,5 @@
 import logging
-from time import time
+from time import sleep, time
 
 import feedparser
 
@@ -29,22 +29,25 @@ else:
     seedr = None
 
 
-def seedr_copy(entry):
+def seedr_copy(entry, tag):
     link = config.required.TORRENT_URL.format(name=entry.title)
     result = False
     try:
         tor = seedr.download(link, filter_ext=[".mp4", ".mkv"])
         if tor.status == "finished":
-            log.debug(f"Downloaded {link}")
-            for file in tor.download_links:
-                log.debug(f"Copying {file['name']}")
-                rclone.copyurl(file["url"])
-            result = True
+            log.debug(f"{tag} Downloaded {link}")
+            links = tor.download_links
+            if not links:
+                result = True
+            else:
+                for file in links:
+                    log.debug(f"{tag} Copying {file['name']}")
+                    result = rclone.copyurl(file["url"]) == 0
         tor.delete()
     except TimeoutError as e:
-        raise log.warning(f"Seedrcc Timeout: {e}")
+        raise TimeoutError(f"{tag} Seedrcc Timeout: {e}")
     except Exception as e:
-        raise log.warning(f"Seedrcc failed: {e}")
+        raise Exception(f"{tag} Seedrcc failed: {e}")
     finally:
         try:
             tor.delete()
@@ -59,20 +62,19 @@ def rclone_copy(entry):
     return rclone_copy == 0
 
 
-def handle_entry(entry: Entry, total: int, current: int):
+def handle_entry(entry: Entry, tag: str):
     start_time = time()
-    count = f"[{current}/{total}]"
-    log.info(f"{count} Copying: {entry.title}")
+    log.info(f"{tag} Copying: {entry.title}")
     result = rclone_copy(entry)
     if not result and seedr and entry.is_failed:
         try:
-            log.info("Rclone failed using seedrcc...")
-            result = seedr_copy(entry)
+            log.info(f"{tag} Rclone failed using seedrcc...")
+            result = seedr_copy(entry, tag)
         except Exception as e:
-            log.debug(f"Seedrcc failed: {e}")
+            log.debug(f"{tag} Seedrcc failed: {e}")
     if result:
         log.info(
-            f"{count} Copied Successfully in {int(time() - start_time)}s: {entry.title}"
+            f"{tag} Copied Successfully in {int(time() - start_time)}s: {entry.title}"
         )
     return result
 
