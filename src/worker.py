@@ -75,5 +75,5 @@ class WorkerManager:
         self.start_threads(config.required.WORKERS)
 
         self.queue.join()
-        log.debug(f"[{self.__completed - self.__failed}/{self.total}] Tasks completed successfully")
+        log.info(f"[{self.__completed - self.__failed}/{self.total}] Tasks completed successfully")
         db.dump()
