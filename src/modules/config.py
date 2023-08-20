@@ -4,16 +4,13 @@ from dotenv import load_dotenv
 
 
 class ConfigParse:
-    def __init__(
-        self, config: dict, default_config: dict = None, required: bool = False
-    ):
+    def __init__(self, config: dict, required: bool = False):
         self.__config = config
-        self.__default_config = default_config or {}
         self.__required = required
 
     def __find_value(self, name: str):
         try:
-            return self.__config.get(name) or self.__default_config[name]
+            return self.__config[name]
         except KeyError:
             if self.__required:
                 raise KeyError(
@@ -34,17 +31,16 @@ class ConfigParse:
         return self.__get_parsed_value(name)
 
     def __contains__(self, name: str):
-        return name in self.config or name in self.default_config
+        return name in self.config
 
 
 class Config(ConfigParse):
-    def __init__(self, config_path: str = ".env", default_values: dict = None):
-        self.config_path = config_path
-        self.default_values = default_values or {}
-        self.load_config()
-        self.required = ConfigParse(self.config, self.default_values, True)
-        super().__init__(self.config, self.default_values)
+    def __init__(self, config_path: str = ".env", default_values: dict = {}):
+        config = self.load_config(config_path=config_path)
+        config.update(default_values)
+        self.required = ConfigParse(config, True)
+        super().__init__(config)
 
-    def load_config(self):
-        load_dotenv(dotenv_path=self.config_path)
-        self.config = os.environ
+    def load_config(self, config_path: str):
+        load_dotenv(dotenv_path=config_path)
+        return os.environ
