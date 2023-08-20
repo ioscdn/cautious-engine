@@ -2,12 +2,12 @@ import logging
 import os
 import threading
 from time import time
-from src import db
 
 from seedrcc import Login, Seedr
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 log = logging.getLogger(__name__)
+
 
 class Torrent:
     def __init__(self, torrent, seedr: Seedr, filter_ext=None) -> None:
@@ -66,24 +66,14 @@ class Torrent:
 
 class Seedrcc(Seedr):
     def __init__(self, username, password):
-        self.__username = username
-        self.__password = password
         self._lock = threading.Lock()
+        self.__token = self.__create_new_token(username=username, password=password)
+        super().__init__(token=self.__token)
 
-        self.__token = db.get("seedr_token")
-        if not self.__token:
-            self.__token = self.__create_new_token()
-        super().__init__(token=self.__token, callbackFunc=self.__save_token)
-    
-    def __save_token(self, token, userId):
-        db.set("seedr_token", token)
-        log.info(f"Token refreshed for User ID: {userId}")
-    
-    def __create_new_token(self):
-        log.info("Login to seedr using username and password")
-        login = Login(self.__username, self.__password)
+    def __create_new_token(self, username, password):
+        log.debug("Login to seedr using username and password")
+        login = Login(username=username, password=password)
         login.authorize()
-        db.set("seedr_token", login.token)
         return login.token
 
     def download(self, uri, filter_ext=None, timeout=8 * 60) -> Torrent:
