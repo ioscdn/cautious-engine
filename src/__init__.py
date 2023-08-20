@@ -25,5 +25,5 @@ log = logging.getLogger(__name__)
 
 
 db = ThreadSafePickleDB(config.required.DB_PATH, True)
-if "--reset-db" in sys.argv:
+if "--reset-db" in sys.argv or config.RESET_DB:
     db.deldb()

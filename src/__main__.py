@@ -1,5 +1,5 @@
 import logging
-from time import sleep, time
+from time import time
 
 import feedparser
 
@@ -68,7 +68,7 @@ def handle_entry(entry: Entry, tag: str):
     result = rclone_copy(entry)
     if not result and seedr and entry.is_failed:
         try:
-            log.info(f"{tag} Rclone failed using seedrcc...")
+            log.info(f"{tag} Rclone failed, using seedrcc...")
             result = seedr_copy(entry, tag)
         except Exception as e:
             log.debug(f"{tag} Seedrcc failed: {e}")

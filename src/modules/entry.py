@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timedelta
 
 from src import config
@@ -37,7 +36,7 @@ class Entry:
         return key in self.__entry
 
     def __repr__(self):
-        return f"<Entry {self.__entry[self.id]}>"
+        return f"<Entry {self.id}>"
 
     def __str__(self):
         return self.__repr__()

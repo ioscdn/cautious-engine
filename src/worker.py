@@ -1,5 +1,5 @@
 import logging
-from queue import Queue
+from queue import LifoQueue
 from threading import Lock, Thread
 from traceback import format_exc
 
@@ -20,7 +20,7 @@ class WorkerManager:
         self.em = EntriesManager(db)
         self.handle_entry = handle_entry
         self.get_entries = get_entries
-        self.queue = Queue()
+        self.queue = LifoQueue()
         self.total = 0
         self.__completed = 0
         self.__failed = 0
@@ -34,7 +34,7 @@ class WorkerManager:
         with self._lock:
             self.__completed += 1
             return self.__completed
-    
+
     def __increase_failed(self):
         with self._lock:
             self.__failed += 1
@@ -58,9 +58,7 @@ class WorkerManager:
 
     def start_threads(self, workers: int):
         for _ in range(workers):
-            t = Thread(target=self.runners)
-            t.daemon = True
-            t.start()
+            Thread(target=self.runners, daemon=True).start()
 
     def check_new_entries(self):
         log.debug("Checking for new entries")
@@ -75,5 +73,7 @@ class WorkerManager:
         self.start_threads(config.required.WORKERS)
 
         self.queue.join()
-        log.info(f"[{self.__completed - self.__failed}/{self.total}] Tasks completed successfully")
+        log.info(
+            f"[{self.__completed - self.__failed}/{self.total}] Tasks completed successfully"
+        )
         db.dump()

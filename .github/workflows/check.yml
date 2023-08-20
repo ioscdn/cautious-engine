@@ -31,7 +31,7 @@ jobs:
                   pip install -r requirements.txt -q
                   sudo -v ; curl https://rclone.org/install.sh | sudo bash
 
-            - name: Setup environment variables and rclone config
+            - name: Setup configuration
               run: |
                   echo "$RCLONE_CONFIG" > $RCLONE_CONFIG_PATH
                   echo "${{ secrets.ENV || vars.env }}" > $GITHUB_WORKSPACE/.env
@@ -45,7 +45,7 @@ jobs:
                   if_no_artifact_found: warn
 
             - name: Run check script
-              timeout-minutes: 120
+              timeout-minutes: 60
               run: |
                   python3 -m src
 
