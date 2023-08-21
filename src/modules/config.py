@@ -1,6 +1,6 @@
 import os
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
 
 class ConfigParse:
@@ -33,14 +33,55 @@ class ConfigParse:
     def __contains__(self, name: str):
         return name in self.config
 
+    def __repr__(self):
+        return f"<Config {self.__config}>"
+
+    def __str__(self):
+        return str(self.__config)
+
 
 class Config(ConfigParse):
-    def __init__(self, config_path: str = ".env", default_values: dict = {}):
-        config = self.load_config(config_path=config_path)
-        config.update(default_values)
-        self.required = ConfigParse(config, True)
-        super().__init__(config)
+    def __init__(
+        self,
+        config: str | dict = ".env",
+        default: str | dict = {},
+        override: bool = False,
+    ):
+        # generate __doc__
+        """
+        Config class for loading environment variables from a .env file or a dict.\n
+        If a .env file is provided, it will be loaded and then the environment variables will be loaded.\n
+        If a dict is provided, it will be loaded and then the environment variables will be loaded.\n
+        If override is True, the environment variables will be loaded first and then the config will be loaded.
 
-    def load_config(self, config_path: str):
-        load_dotenv(dotenv_path=config_path)
-        return os.environ
+        Args:
+            `config` (str, optional): Path to a .env file or a dict. Defaults to ".env".
+
+            `default` (dict, optional): Path to a default .env file or a dict. Defaults to {}.
+
+            `override` (bool, optional): Whether to override the environment variables with the config. Defaults to False.
+        """
+        __config = self.__load_config(default)
+        __config.update(self.__load_config(config))
+
+        if override:
+            os.environ.update(__config)
+        else:
+            __config.update(os.environ)
+
+        self.required = ConfigParse(__config, required=True)
+        super().__init__(__config)
+
+    def __load_config(self, config: dict | str) -> dict:
+        if type(config) == dict:
+            return config
+        elif type(config) == str:
+            config_path = os.path.abspath(config)
+            if os.path.exists(config_path):
+                return dotenv_values(config_path)
+            else:
+                raise FileNotFoundError(
+                    f"Config file not found: {config_path}")  # fmt: skip
+        else:
+            raise TypeError(
+                f"Config must be a dict or a path to a .env file, not {type(config)}")  # fmt: skip
