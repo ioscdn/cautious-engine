@@ -25,6 +25,8 @@ jobs:
 
             - name: Setup Python
               uses: actions/setup-python@v4
+              with:
+                  cache: pip
 
             - name: Install dependencies and rclone
               run: |
