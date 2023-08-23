@@ -85,7 +85,6 @@ class Handler:
         result = self.rclone_copy(entry)
         if not result:
             check_url = self.check_url(self.HTTP_URL.format(name=entry.title))
-            print(check_url)
             if check_url:
                 log.info(f"{tag} Rclone failed")
             if not check_url and self.seedr:
