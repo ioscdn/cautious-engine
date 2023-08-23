@@ -1,4 +1,4 @@
-rss-data.json
+*-data.json
 *.env
 rclone.conf
 __pycache__

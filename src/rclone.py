@@ -1,28 +1,55 @@
 import logging
 import subprocess
+from datetime import datetime, timedelta
+
+log = logging.getLogger(__name__)
 
 
 class Rclone:
     def __init__(
-        self, config_path=None, default_dest=None, rclone_path="rclone", debug=False
+        self,
+        config_path=None,
+        default_dest=None,
+        rclone_path="rclone",
+        rate_limit_errors: list = None,
+        rate_limit_wait_time: int = 600,
     ) -> None:
         self.args = [rclone_path]
+
         if config_path:
             self.args.extend(["--config", config_path])
+
         self.default_dest = default_dest or "dest:"
-        self.log = logging.getLogger(__name__)
-        self.debug = debug
-        if debug:
-            self.log.setLevel(logging.DEBUG)
-        self.log.debug(f"Rclone args: {self.args}")
-        self.log.debug(f"Rclone default dest: {self.default_dest}")
+        self.rate_limit_errors = rate_limit_errors or []
+        self.rate_limit_wait_time = timedelta(seconds=rate_limit_wait_time)
+        self.is_rate_limited = False
+
+        log.debug(f"Rclone args: {self.args}")
+        log.debug(f"Rclone default dest: {self.default_dest}")
 
     def rclone(self, args):
-        self.log.debug(f"Running rclone {' '.join(args)}")
-        process = subprocess.run([*self.args, *args], capture_output=True, text=True)
-        if process.returncode != 0 and self.debug:
-            self.log.warning(process.stdout.strip())
-            self.log.warning(process.stderr.strip())
+        cmd = [*self.args, *args]
+        log.debug(f"Running rclone: {' '.join(cmd)}")
+
+        if self.is_rate_limited and datetime.now() < self.is_rate_limited:
+            log.warning(
+                f"Rate limited, waiting until {self.is_rate_limited.isoformat()}"
+            )
+            return 1
+
+        process = subprocess.run(cmd, capture_output=True, text=True)
+
+        if process.returncode != 0:
+            log.debug(process.stdout.strip())
+            log.debug(process.stderr.strip())
+
+            for rate_limit_message in self.rate_limit_errors:
+                if rate_limit_message in process.stderr:
+                    self.is_rate_limited = datetime.now() + self.rate_limit_wait_time
+                    log.warning(
+                        f"Rate limited, waiting until {self.is_rate_limited.isoformat()}"
+                    )
+
         return process.returncode
 
     def copyurl(

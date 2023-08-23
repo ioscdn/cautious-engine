@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from dotmagic.utils import seconds
+
 from src import config
 
 
@@ -20,7 +22,7 @@ class Entry:
     @property
     def is_expired(self):
         return datetime.now() - datetime.fromisoformat(self.created_at) > timedelta(
-            hours=config.required.ENTRY_EXPIRE_HOURS
+            seconds=seconds(config.ENTRY_EXPIRE_TIME or "3d")
         )
 
     def __getitem__(self, key):

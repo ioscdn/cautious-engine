@@ -2,10 +2,11 @@ import logging
 from queue import LifoQueue
 from threading import Lock, Thread
 from traceback import format_exc
+from typing import Union
 
-from src import DEBUG, config, db
+from src import DEBUG, config
 
-from .modules.entry_manager import EntriesManager
+from .modules.entry_manager import LastEntriesManager, LastPublishDateManager
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG if DEBUG else logging.INFO)
@@ -16,8 +17,9 @@ class WorkerManager:
         self,
         handle_entry: callable,
         get_entries: callable,
+        entries_manager: Union[LastEntriesManager, LastPublishDateManager],
     ) -> None:
-        self.em = EntriesManager(db)
+        self.em = entries_manager
         self.handle_entry = handle_entry
         self.get_entries = get_entries
         self.queue = LifoQueue()
@@ -28,7 +30,7 @@ class WorkerManager:
 
     def update_entries(self):
         entries = self.get_entries()
-        self.em.save_new_entries(entries)
+        self.em.feed_new_entries(entries)
 
     def __get_current(self):
         with self._lock:
@@ -76,4 +78,3 @@ class WorkerManager:
         log.info(
             f"[{self.__completed - self.__failed}/{self.total}] Tasks completed successfully"
         )
-        db.dump()

@@ -14,7 +14,7 @@ concurrency:
 env:
     RCLONE_CONFIG_PATH: rclone.conf
     RCLONE_CONFIG: ${{ secrets.RCLONE_CONFIG }}
-    DEBUG: ${{ secrets.DEBUG || vars.DEBUG }}
+    DEBUG: ${{ vars.DEBUG }}
 
 jobs:
     check-content:
@@ -34,12 +34,12 @@ jobs:
             - name: Setup configuration
               run: |
                   echo "$RCLONE_CONFIG" > $RCLONE_CONFIG_PATH
-                  echo "${{ secrets.ENV || vars.env }}" > $GITHUB_WORKSPACE/.env
+                  echo "${{ secrets.ENV }}" > $GITHUB_WORKSPACE/.env
 
             - name: Download artifact
               uses: dawidd6/action-download-artifact@v2
               with:
-                  name: rss-data
+                  name: entries-data
                   workflow_conclusion: ""
                   check_artifacts: true
                   if_no_artifact_found: warn
@@ -53,5 +53,5 @@ jobs:
               if: '!cancelled()'
               uses: actions/upload-artifact@v3
               with:
-                  name: rss-data
-                  path: rss-data.json
+                  name: entries-data
+                  path: entries-data.json
