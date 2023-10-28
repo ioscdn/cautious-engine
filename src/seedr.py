@@ -76,7 +76,7 @@ class Seedrcc(Seedr):
         login.authorize()
         return login.token
 
-    def download(self, uri, filter_ext=None, timeout=8 * 60) -> Torrent:
+    def download(self, uri, filter_ext=None, timeout=15 * 60) -> Torrent:
         with self._lock:
             tor = None
             if uri.startswith("magnet"):
